@@ -1,29 +1,26 @@
 #!/bin/bash
 
+# Update packages and install necessary tools
+sudo yum update -y
+
 # Download the latest version of Minikube
 curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-latest.x86_64.rpm
 
 # Install Minikube
 sudo rpm -Uvh minikube-latest.x86_64.rpm
 
-# Update packages
-sudo yum update -y
-
-# Install Docker using amazon-linux-extras and yum
+# Install Docker
 sudo amazon-linux-extras install docker -y
 sudo yum install -y docker
 
-# Add ec2-user to docker group
-sudo usermod -aG docker ec2-user
-
-# Start Docker service and enable it to start on boot
+# Start Docker and enable it to start on boot
 sudo systemctl start docker
 sudo systemctl enable docker
 
-# Verify Docker installation
-docker -v
+# Add ec2-user to the Docker group to enable Docker commands without sudo
+sudo usermod -aG docker ec2-user
 
-# Get the latest stable version of Kubernetes (kubectl) and download it
+# Download the latest stable version of kubectl
 KUBECTL_VERSION=$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)
 curl -LO "https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
 
@@ -31,5 +28,14 @@ curl -LO "https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VE
 sudo chmod +x ./kubectl
 sudo mv ./kubectl /usr/local/bin/kubectl
 
-# Schedule a restart to ensure Docker group permissions are applied to ec2-user
+# Start Minikube with the Docker driver
+sudo -u ec2-user minikube start --driver=docker
+
+# Set kubectl context to Minikube
+sudo -u ec2-user kubectl config use-context minikube
+
+# Verify Minikube and kubectl configuration
+sudo -u ec2-user kubectl get nodes
+
+# Schedule a reboot to apply Docker group permissions to ec2-user
 sudo shutdown -r +1 "Rebooting instance in 1 minute to apply Docker group permissions"
