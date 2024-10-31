@@ -30,7 +30,7 @@ You can configure these in the EC2 Security Group associated with your instance.
   kubectl version --client
 
 ### Check Minikube Installation:  
-  minikube start
+  minikube start -- need to do this before running your kubectl commands
 
 ### You can verify Minikube's status with:  
   minikube status
